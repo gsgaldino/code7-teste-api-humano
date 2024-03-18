@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OMNI ON-PREMISES</title>
+  </head>
+  <body onload="onload()">
+    <div class="container">
+      <h1 class="title">TESTE HUMANO FAKE</h1>
+      <div class="chat">
+        <div class="chat-header">Chat:</div>
+        <div id="msg" class="messages"></div>
+        <div class="input-group">
+          <input
+            type="text"
+            id="message"
+            class="input"
+            placeholder="Escreva sua mensagem"
+          />
+          <button onclick="envia()" class="btn send-btn">Enviar</button>
+        </div>
+        <div class="button-group">
+          <button onclick="terminar()" class="btn terminate-btn">
+            Terminar conversa
+          </button>
+          <label for="fileInput" class="btn upload-btn">Upload</label>
+          <input type="file" id="fileInput" class="file-input" />
+        </div>
+      </div>
+
+      <!-- MODAL -->
+      <button id="openModalBtn" class="btn modal-btn">
+        Inserir nome de agente
+      </button>
+
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <input
+            type="text"
+            id="inputField"
+            class="input"
+            placeholder="Digite seu nome de agente"
+          />
+          <button onclick="enviarNome()" class="btn modal-submit-btn">
+            Enviar
+          </button>
+        </div>
+      </div>
+    </div>
+    <style>
+      /* Reset de estilos para garantir uma base consistente */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .title {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .chat {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: white;
+      }
+      .chat-header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .messages {
+        margin-bottom: 10px;
+      }
+      .input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .btn {
+        padding: 10px 15px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.2s, color 0.2s;
+        height: 40px;
+      }
+      .send-btn {
+        background-color: #007bff;
+        color: white;
+        margin-left: 10px;
+      }
+      .send-btn:hover {
+        background-color: #0056b3;
+      }
+      .terminate-btn {
+        background-color: #dc3545;
+        color: white;
+      }
+      .terminate-btn:hover {
+        background-color: #c82333;
+      }
+      .upload-btn {
+        background-color: #28a745;
+        color: white;
+        cursor: pointer;
+        padding: 12px;
+      }
+      .upload-btn:hover {
+        background-color: #218838;
+      }
+      .file-input {
+        display: none;
+      }
+      .modal-btn {
+        background-color: #6c757d;
+        color: white;
+        margin: 10px 0;
+      }
+      .modal-btn:hover {
+        background-color: #5a6268;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      .modal-content {
+        background-color: white;
+        border-radius: 10px;
+        padding: 35px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .close {
+        color: #aaa;
+        font-size: 24px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        cursor: pointer;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+      }
+      .chat {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .chat-header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .messages {
+        margin-bottom: 20px;
+      }
+      .message {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .message-img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+      }
+      .message-content {
+        flex: 1;
+        padding: 10px;
+        background-color: #f7f7f7;
+        border-radius: 6px;
+      }
+      .message-bot {
+        color: #007bff;
+        font-weight: bold;
+      }
+      .message-agent {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .message-text {
+        margin-top: 5px;
+        font-size: 14px;
+      }
+      .message-bot {
+        background-color: #f4f4f4;
+        color: #007bff;
+      }
+      /* Estilização para mensagens do agente */
+      .message-agent {
+        background-color: #f4f4f4;
+        color: #28a745;
+      }
+      /* Estilização para o tipo de mensagem (Bot/Agente) */
+      .message-type {
+        font-size: 12px;
+        font-weight: bold;
+      }
+      /* Estilização para o conteúdo da mensagem */
+      .message-content {
+        padding: 10px;
+        border-radius: 8px;
+        width: auto;
+      }
+      /* Estilização para imagens nas mensagens */
+      .message-img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      /* Estilização para o texto da mensagem */
+      .message-text {
+        font-size: 14px;
+        margin-top: 5px;
+      }
+    </style>
+  </body>
+
+  <script>
+    const envia = async () => {
+      const text = document.getElementById("message");
+      const data = {
+        message: text.value,
+      };
+      fetch("http://localhost:8181/message-recive", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+      await getMsg();
+      text.value = "";
+    };
+    const onload = async () => {
+      await getMsg();
+      setInterval(getMsg, 5000);
+    };
+    const terminar = () => {
+      fetch("http://localhost:8181/zerar-array", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+    };
+    const openModalBtn = document.getElementById("openModalBtn");
+    const modal = document.getElementById("myModal");
+    const closeModalBtn = document.querySelector(".close");
+    openModalBtn.addEventListener("click", () => {
+      modal.style.display = "block";
+    });
+    closeModalBtn.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+    window.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+    const getMsg = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8181/message-show"
+        );
+        const data = await response.json();
+        const msgContainer = document.getElementById("msg");
+        msgContainer.innerHTML = "";
+        const inputField = document.getElementById("inputField");
+        const agentName = inputField.value;
+        data.forEach((item) => {
+          const div = document.createElement("div");
+          div.classList.add("message");
+          const isBot = document.createElement("div");
+          isBot.classList.add("message-type");
+          isBot.textContent = item.bot
+            ? "Bot"
+            : item.agente
+            ? agentName.toString().length > 0
+              ? agentName
+              : "Agente"
+            : "";
+          const messageContent = document.createElement("div");
+          messageContent.classList.add("message-content");
+          let content = document.createElement("div");
+          if (item.bot || item.agente) {
+            div.style.flexDirection = "column";
+            div.style.alignItems = "baseline";
+            isBot.style.margin = "10px 0";
+          } else {
+            content.style.display = "flex";
+            content.style.justifyContent = "end";
+          }
+          const messageText = document.createElement("div");
+          messageText.classList.add("message-text");
+          if (item.tipo === "Image") {
+            const img = document.createElement("img");
+            img.classList.add("message-img");
+            img.src = item.message;
+            messageContent.appendChild(img);
+          } else if (
+            item.tipo === "Document" ||
+            item.tipo === "Audio" ||
+            item.tipo === "Video"
+          ) {
+            const a = document.createElement("a");
+            a.href = item.message;
+            a.target = "_blank";
+            a.textContent = "Baixe seu arquivo aqui";
+            messageContent.appendChild(a);
+          } else {
+            content.textContent = item.message;
+            messageContent.appendChild(content);
+          }
+          div.appendChild(isBot);
+          div.appendChild(messageContent);
+          div.appendChild(messageText);
+          msgContainer.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Erro ao obter os dados:", error);
+      }
+    };
+    const enviarNome = () => {
+      const inputField = document.getElementById("inputField");
+      const agentName = inputField.value;
+      const modal = document.getElementById("myModal");
+      fetch("http://localhost:8181/set-agent-name", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ agentName: agentName }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Erro ao enviar o nome do agente:", error);
+        });
+      modal.style.display = "none";
+    };
+    const uploadButton = document.getElementById("fileInput");
+    const fileInput = document.getElementById("fileInput");
+    uploadButton.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+          console.log('EU SOU O RESPONSE', response);
+          const result = await response.json();
+          if (result.success) {
+            console.log("Link do arquivo:", result.data.url);
+          } else {
+            console.error("Erro:", result.message);
+            console.log(result);
+            alert('Erro ao enviar o seu arquivo');
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+        }
+      }
+    });
+  </script>
+</html>
